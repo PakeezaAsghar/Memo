@@ -10,7 +10,6 @@ import { AuthScreen } from './components/AuthScreen';
 import { AppShell } from './components/AppShell';
 import { QuickCaptureModal } from './components/QuickCaptureModal';
 import { GlobalSearchModal } from './components/GlobalSearchModal';
-import { SessionMoodBar } from './components/MoodChecker';
 import { ToastContainer } from './components/ui/ToastContainer';
 import { DashboardPage } from './pages/DashboardPage';
 import { NotesPage } from './pages/NotesPage';
@@ -106,7 +105,6 @@ function WorkspaceRouter() {
       {renderPage()}
       <QuickCaptureModal />
       <GlobalSearchModal />
-      <SessionMoodBar />
     </AppShell>
   );
 }

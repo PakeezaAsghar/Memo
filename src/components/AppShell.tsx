@@ -34,6 +34,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import type { PageId } from '../types/workspace';
 import { BrandMark } from './BrandMark';
+import { TimedMoodBar } from './MoodChecker';
 import { withFileAuth } from '../lib/api';
 
 interface NavEntry {
@@ -453,6 +454,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Timed mood check-in bar after 1-2 minutes on site */}
+      <TimedMoodBar />
 
       {/* Mobile Floating Action Button */}
       <button

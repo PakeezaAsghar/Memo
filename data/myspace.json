@@ -65,6 +65,14 @@
       "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
       "createdAt": "2026-11-21T17:39:44.077Z",
       "lastActiveAt": "2026-11-21T17:39:44.077Z"
+    },
+    {
+      "id": "sess-498d2e0c",
+      "token": "09c59f156cb3704da6e88dfa3c16a3fcc86097d912d9b5eec32b170fa2eda54b",
+      "userId": "user-claire",
+      "device": "curl/7.88.1",
+      "createdAt": "2026-11-23T18:27:28.294Z",
+      "lastActiveAt": "2026-11-23T18:27:28.294Z"
     }
   ],
   "workspaces": {

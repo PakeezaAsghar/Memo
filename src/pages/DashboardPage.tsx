@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useWorkspace } from '../context/WorkspaceContext';
 import { getGreeting } from '../components/AppShell';
+import { MOOD_OPTIONS, MoodFace } from '../components/MoodChecker';
 import type { PageId } from '../types/workspace';
 
 const DAILY_QUOTES = [
@@ -56,7 +57,8 @@ const HEX_TAG_PATH =
 const HEX_TAG_WITH_HOLE = `${HEX_TAG_PATH} M 94,43 m -6.5,0 a 6.5,6.5 0 1,0 13,0 a 6.5,6.5 0 1,0 -13,0`;
 
 export function DashboardPage() {
-  const { user, workspace, setActivePage, openQuickCapture, updateItem, notify } = useWorkspace();
+  const { user, workspace, setActivePage, openQuickCapture, updateItem, updateCalendarMood, notify } =
+    useWorkspace();
   const [miniCalDate, setMiniCalDate] = useState(() => new Date());
   const [quoteIdx, setQuoteIdx] = useState(0);
 
@@ -726,6 +728,42 @@ export function DashboardPage() {
                 })}
               </div>
             </div>
+
+            {/* Mood emojis directly below the date trail */}
+            {(() => {
+              const activeMoodDate = arcDays[3]?.iso || todayStr;
+              const activeMood = workspace?.calendarMoods?.[activeMoodDate];
+              return (
+                <div className="mt-2 pt-2.5 flex items-center justify-center gap-3 sm:gap-4">
+                  {MOOD_OPTIONS.map((m) => {
+                    const active = activeMood === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        aria-label={m.label}
+                        title={m.label}
+                        aria-pressed={active}
+                        onClick={async () => {
+                          try {
+                            const nextMood = active ? null : m.id;
+                            await updateCalendarMood(activeMoodDate, nextMood);
+                            notify(nextMood ? `Mood logged: ${m.label}` : 'Mood cleared');
+                          } catch {
+                            notify('Unable to save mood', 'error');
+                          }
+                        }}
+                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-transform duration-150 hover:scale-110 ${
+                          active ? m.ringClass : 'opacity-85 hover:opacity-100'
+                        }`}
+                      >
+                        <MoodFace mood={m.id} size="md" />
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex items-center justify-between gap-2">
               <button

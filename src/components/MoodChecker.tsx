@@ -52,12 +52,12 @@ export function MoodFace({
   size = 'lg',
 }: {
   mood: CalendarMood;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg';
 }) {
   const cfg = MOOD_OPTIONS.find((m) => m.id === mood) || MOOD_OPTIONS[4];
   const uid = useId();
   const gradId = `memo-mood-${mood}-${size}-${uid}`;
-  const cls = size === 'sm' ? 'w-6 h-6' : size === 'xl' ? 'w-16 h-16' : 'w-11 h-11';
+  const cls = size === 'sm' ? 'w-6 h-6' : size === 'md' ? 'w-9 h-9' : 'w-11 h-11';
 
   return (
     <svg viewBox="0 0 44 44" aria-hidden="true" className={cls}>
@@ -182,135 +182,90 @@ export function MoodCheckerBar({
   );
 }
 
-const SLIDER_FILL_CLASSES = [
-  'w-[22%] bg-gradient-to-r from-[#EF5D42] to-[#F4845F]',
-  'w-[41%] bg-gradient-to-r from-[#EF5D42] via-[#F29659] to-[#E9B35C]',
-  'w-[61%] bg-gradient-to-r from-[#EF5D42] via-[#ECAA57] to-[#E3C86B]',
-  'w-[80%] bg-gradient-to-r from-[#EF5D42] via-[#E7BA5A] to-[#A7D98A]',
-  'w-[100%] bg-gradient-to-r from-[#EF5D42] via-[#E4C25E] to-[#74D187]',
-];
+const SLIDER_FILL_WIDTHS = ['w-[16%]', 'w-[37%]', 'w-[58%]', 'w-[79%]', 'w-full'];
 
-const SESSION_MOOD_DELAY_MS = 90_000; // ~1.5 minutes on site
-
-export function SessionMoodBar() {
-  const { workspace, updateCalendarMood, notify } = useWorkspace();
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const alreadyLogged = Boolean(workspace?.calendarMoods?.[todayStr]);
-  const storageKey = `memo_mood_prompt_dismissed_${todayStr}`;
-
+export function TimedMoodBar() {
+  const { user, workspace, updateCalendarMood, notify } = useWorkspace();
   const [visible, setVisible] = useState(false);
-  const [moodIdx, setMoodIdx] = useState(3);
+  const [dismissed, setDismissed] = useState(false);
+  const [moodIndex, setMoodIndex] = useState(3);
   const [saving, setSaving] = useState(false);
 
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const alreadyLoggedToday = Boolean(workspace?.calendarMoods?.[todayStr]);
+
   useEffect(() => {
-    if (!workspace || alreadyLogged) {
+    if (!user || dismissed || alreadyLoggedToday) {
       setVisible(false);
       return;
     }
-    try {
-      if (sessionStorage.getItem(storageKey) === '1') return;
-    } catch {
-      // ignore sessionStorage access errors
-    }
-
     const timer = window.setTimeout(() => {
       setVisible(true);
-    }, SESSION_MOOD_DELAY_MS);
+    }, 90000);
     return () => window.clearTimeout(timer);
-  }, [workspace, alreadyLogged, storageKey]);
+  }, [user, dismissed, alreadyLoggedToday]);
 
-  if (!visible || alreadyLogged) return null;
+  if (!visible || dismissed || alreadyLoggedToday) return null;
 
-  const selected = MOOD_OPTIONS[moodIdx] || MOOD_OPTIONS[3];
-
-  const dismiss = () => {
-    try {
-      sessionStorage.setItem(storageKey, '1');
-    } catch {
-      // ignore sessionStorage errors
-    }
-    setVisible(false);
-  };
-
-  const handleSave = async () => {
-    if (saving) return;
-    setSaving(true);
-    try {
-      await updateCalendarMood(todayStr, selected.id);
-      try {
-        sessionStorage.setItem(storageKey, '1');
-      } catch {
-        // ignore sessionStorage errors
-      }
-      setVisible(false);
-      notify(`Mood logged: ${selected.label}`);
-    } catch {
-      notify('Unable to save mood', 'error');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const selected = MOOD_OPTIONS[moodIndex] || MOOD_OPTIONS[3];
 
   return (
-    <div
-      role="dialog"
-      aria-label="Daily mood check-in"
-      className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-40 w-[336px] max-w-[calc(100vw-2rem)] rounded-[18px] bg-[var(--bg-card)]/95 backdrop-blur-md border border-[var(--border-color)] shadow-[0_18px_42px_rgba(57,54,47,0.18)] p-4"
+    <aside
+      aria-label="Mood check-in bar"
+      className="fixed bottom-5 left-1/2 lg:left-[calc(50%+115px)] -translate-x-1/2 z-40 w-[calc(100vw-2rem)] max-w-[390px] rounded-[16px] bg-[var(--bg-card)]/95 backdrop-blur-md border border-[var(--border-color)] shadow-[0_18px_44px_rgba(57,54,47,0.18)] p-4 sm:p-5"
     >
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[13px] font-semibold text-[var(--text-main)]">How’s your mood today?</p>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <p className="text-[13.5px] font-semibold text-[var(--text-main)]">
+          How’s your mood right now?
+        </p>
         <button
           type="button"
-          onClick={dismiss}
+          onClick={() => setDismissed(true)}
           aria-label="Dismiss mood check-in"
-          className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--bg-secondary)] transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-main)] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Featured active emoji matching slider */}
-      <div className="mt-2 mb-3 flex flex-col items-center">
-        <MoodFace mood={selected.id} size="xl" />
-        <span className="mt-1 text-[12px] font-semibold text-[var(--text-secondary)]">
-          {selected.label}
-        </span>
+      {/* Existing glowing pastel emojis */}
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-3.5">
+        {MOOD_OPTIONS.map((m, idx) => {
+          const active = idx === moodIndex;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              aria-label={m.label}
+              title={m.label}
+              aria-pressed={active}
+              onClick={() => setMoodIndex(idx)}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-150 hover:scale-110 ${
+                active ? `${m.ringClass} scale-105` : 'opacity-75 hover:opacity-100'
+              }`}
+            >
+              <MoodFace mood={m.id} size="md" />
+            </button>
+          );
+        })}
       </div>
 
-      {/* Quick-select emoji stops */}
-      <div className="mb-2 px-1 flex items-center justify-between">
-        {MOOD_OPTIONS.map((m, idx) => (
-          <button
-            key={m.id}
-            type="button"
-            aria-label={m.label}
-            title={m.label}
-            onClick={() => setMoodIdx(idx)}
-            className={`rounded-full p-0.5 transition-transform ${
-              moodIdx === idx ? 'scale-115 opacity-100' : 'opacity-65 hover:opacity-100'
-            }`}
-          >
-            <MoodFace mood={m.id} size="sm" />
-          </button>
-        ))}
-      </div>
-
-      {/* Gradient pill slider bar matching reference */}
-      <div className="relative h-8 rounded-full bg-[var(--bg-secondary)] p-1 overflow-hidden">
+      {/* Gradient pill slider bar */}
+      <div className="relative h-7 rounded-full bg-[var(--bg-secondary)] border border-[var(--border-color)]/60 overflow-hidden flex items-center">
         <div
-          className={`h-full rounded-full flex items-center justify-end pr-0.5 transition-all duration-200 ${SLIDER_FILL_CLASSES[moodIdx]}`}
+          className={`h-full rounded-full bg-gradient-to-r from-[#EF6245] via-[#E9B450] to-[#74CF85] flex items-center justify-end p-1 transition-all duration-200 ${SLIDER_FILL_WIDTHS[moodIndex]}`}
         >
-          <span className="w-8 h-6 rounded-full bg-white/95 shadow-[0_2px_6px_rgba(0,0,0,0.20)] shrink-0" />
+          <span className="w-7 h-5 rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.22)] shrink-0" />
         </div>
         <input
           type="range"
           min={0}
-          max={4}
+          max={MOOD_OPTIONS.length - 1}
           step={1}
-          value={moodIdx}
-          aria-label="Slide to select your mood"
-          onChange={(e) => setMoodIdx(Number(e.target.value))}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          value={moodIndex}
+          onChange={(e) => setMoodIndex(Number(e.target.value))}
+          aria-label="Mood level slider"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
       </div>
 
@@ -319,24 +274,31 @@ export function SessionMoodBar() {
         <span>Amazing</span>
       </div>
 
-      <div className="mt-3 flex items-center justify-end gap-2">
+      <div className="mt-3 flex items-center justify-between gap-2">
+        <span className="text-[12px] font-medium text-[var(--text-secondary)]">
+          Feeling <span className="font-semibold text-[var(--text-main)]">{selected.label}</span>
+        </span>
         <button
           type="button"
-          onClick={dismiss}
-          className="h-[30px] px-3 rounded-full text-[12px] font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
-        >
-          Later
-        </button>
-        <button
-          type="button"
-          onClick={handleSave}
           disabled={saving}
-          className="h-[30px] px-4 rounded-full bg-[var(--sage)] hover:bg-[var(--sage-dark)] text-white text-[12px] font-semibold transition-colors disabled:opacity-60"
+          onClick={async () => {
+            setSaving(true);
+            try {
+              await updateCalendarMood(todayStr, selected.id);
+              notify(`Mood logged: ${selected.label}`);
+              setDismissed(true);
+            } catch {
+              notify('Unable to save mood', 'error');
+            } finally {
+              setSaving(false);
+            }
+          }}
+          className="h-[30px] px-3.5 rounded-full bg-[var(--sage)] hover:bg-[var(--sage-dark)] text-white text-[12px] font-semibold transition-colors disabled:opacity-60"
         >
           {saving ? 'Saving…' : 'Save mood'}
         </button>
       </div>
-    </div>
+    </aside>
   );
 }
 
