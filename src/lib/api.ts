@@ -6,6 +6,7 @@ import type {
   UserProfile,
   WorkspaceData,
 } from '../types/workspace';
+import { handleLocalFallback, isLocalToken } from './localFallback';
 
 const TOKEN_KEY = 'myspace_session_token';
 
@@ -31,6 +32,10 @@ export function setStoredToken(token: string | null) {
 
 async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getStoredToken();
+  if (isLocalToken(token)) {
+    return (await handleLocalFallback(path, options, token)) as T;
+  }
+
   const headers = new Headers(options.headers || {});
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
@@ -39,13 +44,26 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
     headers.set('Content-Type', 'application/json');
   }
 
-  const res = await fetch(path, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(path, { ...options, headers });
+  } catch {
+    return (await handleLocalFallback(path, options, token)) as T;
+  }
+
   const text = await res.text();
   let data: Record<string, unknown> = {};
+  let parsedAsJson = false;
   try {
     data = text ? JSON.parse(text) : {};
+    parsedAsJson = true;
   } catch {
     data = { error: text || 'Unexpected server response.' };
+  }
+
+  // Static deployments (e.g., Vercel without Express server) return non-JSON 404 NOT_FOUND for /api/*
+  if (res.status === 404 && !parsedAsJson) {
+    return (await handleLocalFallback(path, options, token)) as T;
   }
 
   if (!res.ok) {

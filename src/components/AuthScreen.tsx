@@ -50,7 +50,12 @@ export function AuthScreen() {
         setView('verify');
         setInfo('Please verify your email to continue.');
       } else {
-        setError(e2.message);
+        const cleanEmail = email.trim().toLowerCase();
+        if (cleanEmail === 'clarie@myspace.app') {
+          setError('No account found for clarie@myspace.app. Did you mean claire@myspace.app?');
+        } else {
+          setError(e2.message);
+        }
       }
     } finally {
       setBusy(false);
