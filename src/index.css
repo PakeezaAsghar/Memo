@@ -1,0 +1,216 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg-main: #F8F4EC;
+  --bg-secondary: #F1EADF;
+  --bg-card: #FFFCF7;
+  --bg-sidebar: #F4EEE4;
+  --sage: #89977A;
+  --sage-dark: #64765B;
+  --sage-soft: #E5EBDD;
+  --blush: #F2DCD9;
+  --rose: #C98F91;
+  --lavender: #E8E1F1;
+  --pale-yellow: #F3E8C9;
+  --peach: #F3E1D0;
+  --text-main: #39362F;
+  --text-secondary: #77736A;
+  --text-muted: #A19B90;
+  --border-color: #E8DFD2;
+  --success: #718A6B;
+  --warning: #C79B55;
+  --error: #C87979;
+  --info: #8294B2;
+}
+
+.dark {
+  --bg-main: #181714;
+  --bg-secondary: #201E1A;
+  --bg-card: #24221E;
+  --bg-sidebar: #1C1A17;
+  --sage: #8FA07E;
+  --sage-dark: #AFC09F;
+  --sage-soft: #283024;
+  --blush: #3A2929;
+  --rose: #D99B9D;
+  --lavender: #2E2938;
+  --pale-yellow: #362F21;
+  --peach: #382D24;
+  --text-main: #F2ECE1;
+  --text-secondary: #B9B2A6;
+  --text-muted: #847E73;
+  --border-color: #36322B;
+  --success: #89A882;
+  --warning: #D8AD66;
+  --error: #DA8B8B;
+  --info: #93A7C9;
+}
+
+html,
+body {
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-editorial {
+  font-family: "DM Serif Display", Georgia, serif;
+}
+
+.font-hand {
+  font-family: "Caveat", cursive;
+}
+
+.font-mono-num {
+  font-family: "JetBrains Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle warm scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Editorial rich-text content styling */
+.prose-myspace h1,
+.prose-myspace h2,
+.prose-myspace h3 {
+  font-weight: 650;
+  color: var(--text-main);
+  margin-top: 0.75em;
+  margin-bottom: 0.35em;
+}
+
+.prose-myspace h1 {
+  font-size: 1.35rem;
+}
+
+.prose-myspace h2 {
+  font-size: 1.15rem;
+}
+
+.prose-myspace ul {
+  list-style-type: disc;
+  padding-left: 1.35rem;
+  margin: 0.4rem 0;
+}
+
+.prose-myspace ol {
+  list-style-type: decimal;
+  padding-left: 1.35rem;
+  margin: 0.4rem 0;
+}
+
+.prose-myspace a {
+  color: var(--sage-dark);
+  text-decoration: underline;
+}
+
+.prose-myspace mark,
+.prose-myspace span[style*="background"] {
+  background-color: #F3E8C9;
+  color: #39362F;
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+@keyframes memo-gentle-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes memo-ripple-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.72;
+  }
+  65% {
+    opacity: 0.28;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.35);
+    opacity: 0;
+  }
+}
+
+.memo-bounce-btn {
+  animation: memo-gentle-bounce 2s ease-in-out infinite;
+  will-change: transform;
+}
+
+.memo-ripple-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  border-radius: 9999px;
+  border-width: 1.5px;
+  border-style: solid;
+  opacity: 0;
+  pointer-events: none;
+  animation: memo-ripple-ring 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+.memo-ripple-ring-1 {
+  border-color: var(--sage-dark);
+  background-color: color-mix(in srgb, var(--sage) 10%, transparent);
+  animation-delay: 0s;
+}
+
+.memo-ripple-ring-2 {
+  border-color: var(--rose);
+  background-color: color-mix(in srgb, var(--rose) 10%, transparent);
+  animation-delay: 0.8s;
+}
+
+.memo-ripple-ring-3 {
+  border-color: var(--warning);
+  background-color: color-mix(in srgb, var(--warning) 10%, transparent);
+  animation-delay: 1.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .memo-bounce-btn {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .memo-ripple-ring {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}

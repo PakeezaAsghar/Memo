@@ -1,0 +1,6 @@
+{
+  "name": "My Space",
+  "description": "A warm, private personal productivity and digital life management workspace for notes, documents, tasks, journal, study, projects, and finances.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
